@@ -8,6 +8,7 @@ import SignInScreen from './screens/SignInScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import "fast-text-encoding";
 
 const Stack = createNativeStackNavigator();
 
