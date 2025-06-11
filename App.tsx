@@ -3,23 +3,15 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useFonts } from 'expo-font';
 import WelcomeScreen from './screens/WelcomeScreen';
 import SignInScreen from './screens/SignInScreen';
 import RegisterScreen from './screens/RegisterScreen';
-
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    'Bitter-Regular': 'https://fonts.gstatic.com/s/bitter/v32/raxhHiqOu8IVPmnRc6SY1KXhnF_Y8fbfOLjOWA.ttf',
-    'Bitter-Medium': 'https://fonts.gstatic.com/s/bitter/v32/raxhHiqOu8IVPmnRc6SY1KXhnF_Y8XbYOLjOWA.ttf',
-    'Bitter-SemiBold': 'https://fonts.gstatic.com/s/bitter/v32/raxhHiqOu8IVPmnRc6SY1KXhnF_Y8SjYOLjOWA.ttf',
-    'Bitter-Bold': 'https://fonts.gstatic.com/s/bitter/v32/raxhHiqOu8IVPmnRc6SY1KXhnF_Y8RHYOLjOWA.ttf',
-  });
 
   useEffect(() => {
     const socket = new SockJS('http://192.168.209.208:8080/gs-guide-websocket');
@@ -65,10 +57,6 @@ export default function App() {
       stompClient.deactivate();
     };
   }, []);
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   return (
     <NavigationContainer>
