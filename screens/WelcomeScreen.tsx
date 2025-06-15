@@ -44,47 +44,48 @@ const WelcomeScreen = ({ navigation }: WelcomeScreenProps) => {
         style={styles.backgroundImage}
         resizeMode="cover"
       >
-        <View style={styles.content}>{/* Logo Section */}
-        <View style={styles.logoSection}>          <Image 
-            source={require('./assets/logo-image.png')}
-            style={styles.logo}
-            resizeMode="contain"
-            accessible={true}
-            accessibilityLabel="Chat Connect Logo"
-          />
-          <Text style={styles.appTitle}>CHAT CONNECT</Text>
-          <Text style={styles.tagline}>TALK. SHARE. CONNECT.</Text>
-        </View>
+        <View style={styles.content}>
+          <View style={styles.logoSection}>
+            <Image
+              source={require('./assets/logo-image.png')}
+              style={styles.logo}
+              resizeMode="contain"
+              accessible={true}
+              accessibilityLabel="Chat Connect Logo"
+            />
+            <Text style={styles.appTitle}>CHAT CONNECT</Text>
+            <Text style={styles.tagline}>TALK. SHARE. CONNECT.</Text>
+          </View>
 
-        {/* Welcome Text */}
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome!</Text>
-          <Text style={styles.welcomeSubtitle}>
-            Connect with employers and vendors through seamless conversations
-          </Text>
-        </View>
-
-        {/* Action Buttons */}        <View style={styles.buttonSection}>
-          <TouchableOpacity 
-            style={styles.primaryButton} 
-            onPress={handleRegister}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryButtonText} numberOfLines={1}>
-              Get Started
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>Welcome!</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Connect with employers and vendors through seamless conversations
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity 
-            style={styles.secondaryButton} 
-            onPress={handleSignIn}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.secondaryButtonText} numberOfLines={1}>
-              I already have an account
-            </Text>          </TouchableOpacity>
+          <View style={styles.buttonSection}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleRegister}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryButtonText} numberOfLines={1}>
+                Get Started
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleSignIn}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.secondaryButtonText} numberOfLines={1}>
+                I already have an account
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
       </ImageBackground>
     </SafeAreaView>
   );

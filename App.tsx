@@ -15,7 +15,7 @@ const Stack = createNativeStackNavigator();
 export default function App() {
 
   useEffect(() => {
-    const socket = new SockJS('http://192.168.209.208:8080/gs-guide-websocket');
+    const socket = new SockJS('http://20.197.44.149:8085/ws');
     
     const stompClient = new Client({
       webSocketFactory: () => socket,
