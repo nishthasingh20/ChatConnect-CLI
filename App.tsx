@@ -14,51 +14,6 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
 
-  useEffect(() => {
-    const socket = new SockJS('http://20.197.44.149:8085/ws');
-    
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      debug: (str) => {
-        console.log('STOMP Debug:', str);
-      },
-      onConnect: () => {
-        console.log('STOMP connected successfully!');
-
-        // Subscribe to the correct topic that matches your Spring Boot controller
-        stompClient.subscribe('/topic/greetings', (message) => {
-          console.log('Received greeting:', message.body);
-          const greeting = JSON.parse(message.body);
-          console.log('Parsed greeting:', greeting);
-        });
-
-        // Send a message to the correct endpoint
-        stompClient.publish({
-          destination: '/app/hello',
-          body: JSON.stringify({ name: 'React Native User' }),
-        });
-      },
-      onStompError: (frame) => {
-        console.error('STOMP Error:', frame.headers['message']);
-        console.error('Details:', frame.body);
-      },
-      onWebSocketError: (error) => {
-        console.error('WebSocket Error:', error);
-      },
-      onDisconnect: () => {
-        console.log('STOMP disconnected');
-      }
-    });
-
-    stompClient.activate();
-
-    return () => {
-      console.log('Deactivating STOMP client');
-      stompClient.deactivate();
-    };
-  }, []);
-
   return (
     <NavigationContainer>
       <Stack.Navigator

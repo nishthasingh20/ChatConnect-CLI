@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { ImageBackground } from 'react-native';
+import { connectAndSendTestMessage } from '../websocket';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,6 +36,9 @@ const WelcomeScreen = ({ navigation }: WelcomeScreenProps) => {
     navigation.navigate('RegisterScreen');
     console.log('Switched to Register Screen');
   };
+  const handleTest = () => {
+    connectAndSendTestMessage();
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,6 +89,20 @@ const WelcomeScreen = ({ navigation }: WelcomeScreenProps) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Temporary button for testing */}
+          <View style={styles.buttonSection}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleTest}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryButtonText} numberOfLines={1}>
+                Hello Testing
+              </Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
       </ImageBackground>
     </SafeAreaView>
