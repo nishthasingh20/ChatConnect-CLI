@@ -22,6 +22,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   Register: undefined;
+  ChatScreen: undefined;
   // Add other routes here if needed
 };
 
@@ -44,7 +45,8 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
       setTimeout(() => {
         setIsLoading(false);
         Alert.alert('Success', 'Signed in successfully!');
-      }, 2000);
+      }, 100);
+      navigation.navigate('ChatScreen');
     } catch (error) {
       setIsLoading(false);
       Alert.alert('Error', 'Failed to sign in. Please try again.');
