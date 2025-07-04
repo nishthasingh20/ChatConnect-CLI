@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,8 +6,6 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import SignInScreen from './screens/SignInScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import ChatScreen from './screens/ChatScreen';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
 import "fast-text-encoding";
 
 const Stack = createNativeStackNavigator();
@@ -32,7 +29,6 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

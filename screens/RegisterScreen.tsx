@@ -72,25 +72,46 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
 
     setIsLoading(true);
     try {
-      // Add your registration logic here
-      console.log('Registering user:', { fullName, email, password });
-      
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false);
+      // Send registration data to Spring Boot backend
+      const response = await fetch('http://192.168.29.79:8080/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName,
+          email,
+          password
+        }),
+      });
+
+      let data = {};
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.indexOf('application/json') !== -1) {
+        data = await response.json();
+      }
+
+      if (response.ok) {
         Alert.alert('Success', 'Account created successfully!', [
           {
             text: 'OK',
             onPress: () => {
-              // navigation.navigate('Home');
-              console.log('Navigate to Home or SignIn');
+              navigation.navigate('SignIn');
             }
           }
         ]);
-      }, 2000);
+      } else {
+        const errorMessage =
+          typeof data === 'object' && data !== null && 'message' in data && typeof (data as any).message === 'string'
+            ? (data as any).message
+            : 'Failed to create account. Please try again.';
+        Alert.alert('Error', errorMessage);
+      }
     } catch (error) {
+      console.error('Registration error:', error);
+      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+    } finally {
       setIsLoading(false);
-      Alert.alert('Error', 'Failed to create account. Please try again.');
     }
   };
 

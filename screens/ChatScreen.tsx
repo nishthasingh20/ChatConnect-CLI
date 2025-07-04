@@ -63,7 +63,7 @@ export default function ChatInterface() {
         <Icon name="more-vert" size={24} color="#4B5563" />
       </View>
 
-      {/* Messages */}
+      {/* Messages -> use flatlist*/} 
       <ScrollView contentContainerStyle={styles.messages}>
         {messages.map((message) => (
           <View key={message.id} style={styles.messageRight}>

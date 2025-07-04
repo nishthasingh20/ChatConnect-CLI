@@ -38,19 +38,39 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
   const handleSignIn = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
+      
       return;
     }
-    setIsLoading(true);
-    try {
-      setTimeout(() => {
-        setIsLoading(false);
-        Alert.alert('Success', 'Signed in successfully!');
-      }, 100);
-      navigation.navigate('ChatScreen');
-    } catch (error) {
-      setIsLoading(false);
-      Alert.alert('Error', 'Failed to sign in. Please try again.');
-    }
+    navigation.navigate('ChatScreen');
+    
+    // setIsLoading(true);
+    // try {
+    //   // Send login data to Spring Boot backend
+    //   const response = await fetch('http://192.168.29.79:8080/api/auth/login', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       email,
+    //       password
+    //     }),
+    //   });
+
+    //   const data = await response.json();
+
+    //   if (response.ok) {
+    //     Alert.alert('Success', 'Signed in successfully!');
+    //     navigation.navigate('ChatScreen');
+    //   } else {
+    //     Alert.alert('Error', data.message || 'Invalid email or password.');
+    //   }
+    // } catch (error) {
+    //   console.error('Sign in error:', error);
+    //   Alert.alert('Error', 'Network error. Please check your connection and try again.');
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   const goToRegister = () => {
