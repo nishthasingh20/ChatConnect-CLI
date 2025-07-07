@@ -21,13 +21,13 @@ const { width } = Dimensions.get('window');
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
-  Register: undefined;
+  RegisterScreen: undefined;
   ChatScreen: undefined;
   // Add other routes here if needed
 };
 
 type SignInScreenProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'Register'>;
+  navigation: NativeStackNavigationProp<RootStackParamList, 'RegisterScreen'>;
 };
 
 const SignInScreen = ({ navigation }: SignInScreenProps) => {
@@ -41,41 +41,40 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
       
       return;
     }
-    navigation.navigate('ChatScreen');
     
-    // setIsLoading(true);
-    // try {
-    //   // Send login data to Spring Boot backend
-    //   const response = await fetch('http://192.168.29.79:8080/api/auth/login', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       email,
-    //       password
-    //     }),
-    //   });
+    setIsLoading(true);
+    try {
+      // Send login data to Spring Boot backend
+      const response = await fetch('http://192.168.29.79:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      });
 
-    //   const data = await response.json();
+      const data = await response.json();
 
-    //   if (response.ok) {
-    //     Alert.alert('Success', 'Signed in successfully!');
-    //     navigation.navigate('ChatScreen');
-    //   } else {
-    //     Alert.alert('Error', data.message || 'Invalid email or password.');
-    //   }
-    // } catch (error) {
-    //   console.error('Sign in error:', error);
-    //   Alert.alert('Error', 'Network error. Please check your connection and try again.');
-    // } finally {
-    //   setIsLoading(false);
-    // }
+      if (response.ok) {
+        Alert.alert('Success', 'Signed in successfully!');
+        navigation.navigate('ChatScreen');
+      } else {
+        Alert.alert('Error', data.message || 'Invalid email or password.');
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const goToRegister = () => {
-    navigation.navigate('Register');
-  };
+  const handleSignUpButton = () => {
+    navigation.navigate('RegisterScreen');
+  }
 
   const goBack = () => {
     navigation.goBack();
@@ -158,7 +157,7 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
             </View>
             <View style={styles.signupPrompt}>
               <Text style={styles.signupPromptText}>Don't have account? </Text>
-              <TouchableOpacity onPress={goToRegister}>
+              <TouchableOpacity onPress={handleSignUpButton}>
                 <Text style={styles.signupLink}>Sign Up</Text>
               </TouchableOpacity>
             </View>
@@ -326,3 +325,7 @@ const styles = StyleSheet.create({
 });
 
 export default SignInScreen;
+
+function sleep(arg0: number) {
+  throw new Error('Function not implemented.');
+}
