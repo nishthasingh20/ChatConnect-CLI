@@ -6,6 +6,7 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import SignInScreen from './screens/SignInScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import ChatScreen from './screens/ChatScreen';
+import UserChats from './screens/UserChats';
 import "fast-text-encoding";
 
 const Stack = createNativeStackNavigator();
@@ -24,6 +25,7 @@ export default function App() {
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen name="UserChats" component={UserChats} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>

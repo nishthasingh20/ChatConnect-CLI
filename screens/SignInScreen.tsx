@@ -23,6 +23,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 type RootStackParamList = {
   RegisterScreen: undefined;
   ChatScreen: undefined;
+  UserChats: undefined;
   // Add other routes here if needed
 };
 
@@ -60,7 +61,7 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
 
       if (response.ok) {
         Alert.alert('Success', 'Signed in successfully!');
-        navigation.navigate('ChatScreen');
+        navigation.navigate('UserChats');
       } else {
         Alert.alert('Error', data.message || 'Invalid email or password.');
       }
