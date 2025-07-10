@@ -53,7 +53,7 @@ export default function ChatInterface() {
             <View style={styles.avatar} />
           </View>
           <View>
-            <Text style={styles.username}>Jerome Bell</Text>  {/* name of the one signed in */}
+            <Text style={styles.username}>Nishtha</Text>  {/* name of the one signed in */}
             <View style={styles.statusRow}>
               <View style={styles.statusDot} />
               <Text style={styles.statusText}>Online</Text>

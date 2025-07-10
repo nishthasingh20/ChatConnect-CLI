@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,18 @@ import {
   SafeAreaView,
   Image,
 } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  UserChats: undefined;
+  ChatScreen: { chat: Chat };
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserChats'>;
+
+interface Props {
+  navigation: NavigationProp;
+}
 
 interface Chat {
   id: string;
@@ -21,71 +33,64 @@ interface Chat {
   avatar: string;
 }
 
-const ChatListScreen: React.FC = () => {
+const ChatListScreen: React.FC<Props> = ({ navigation }) => {
   const [searchText, setSearchText] = useState<string>('');
   
-  const [chats] = useState<Chat[]>([
-    {
-      id: '1',
-      name: 'Nishtha',
-      lastMessage: 'Got it! Thankyou.',
-      time: '11:00am',
-      unreadCount: 2,
-      isOnline: true,
-      avatar: '👨‍💼',
-    },
-    {
-      id: '2',
-      name: 'Sara',
-      lastMessage: 'Thanks for the help! See you tomorrow.',
-      time: '10:45am',
-      unreadCount: 0,
-      isOnline: true,
-      avatar: '👩‍💻',
-    },
-    {
-      id: '3',
-      name: 'Rohan',
-      lastMessage: 'The meeting has been rescheduled.',
-      time: '10:30am',
-      unreadCount: 1,
-      isOnline: false,
-      avatar: '👨‍🎓',
-    },
-  ]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredChats = chats.filter(chat =>
-    chat.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const response = await fetch('http://172.20.48.159:8080/api/users');
+        const data = await response.json();
+        // Use fullName if available, fallback to name or email
+        const formattedChats = data.map((user: any) => ({
+          id: user.email,
+          name: user.fullName || user.name || user.email,
+          lastMessage: '',
+          time: '',
+          unreadCount: 0,
+          isOnline: false,
+          avatar: '👤',
+        }));
+        setChats(formattedChats);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChats();
+  }, []);
 
   const renderChatItem = ({ item }: { item: Chat }) => (
-    <TouchableOpacity style={styles.chatItem}>
+    <TouchableOpacity style={styles.chatItem} activeOpacity={0.7}>
       <View style={styles.avatarContainer}>
         <Text style={styles.avatarText}>{item.avatar}</Text>
-        {item.isOnline && <View style={styles.onlineIndicator} />}
       </View>
-      
       <View style={styles.chatContent}>
         <View style={styles.chatHeader}>
-          <Text style={styles.chatName}>{item.name}</Text>
-          <Text style={styles.chatTime}>{item.time}</Text>
+          <Text style={styles.chatName} numberOfLines={1}>{item.name}</Text>
+          {/* Optionally, add time or status here */}
         </View>
-        
-        <View style={styles.chatFooter}>
-          <Text style={styles.lastMessage} numberOfLines={1}>
-            {item.lastMessage}
-          </Text>
-          {item.unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadCount}>
-                {item.unreadCount > 99 ? '99+' : item.unreadCount}
-              </Text>
-            </View>
-          )}
-        </View>
+        {/* Optionally, add last message here */}
       </View>
+      <Text style={{ fontSize: 18, color: '#B88A6A', marginLeft: 8 }}>›</Text>
     </TouchableOpacity>
   );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F5E6D3" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading chats...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -123,9 +128,9 @@ const ChatListScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Chat List */}
+      Chat List
       <FlatList
-        data={filteredChats}
+        data={chats}
         renderItem={renderChatItem}
         keyExtractor={(item) => item.id}
         style={styles.chatList}

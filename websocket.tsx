@@ -14,7 +14,7 @@ export function connectAndSendTestMessage() {
     return;
   }
 
-  const socket = new SockJS('http://192.168.29.79:8080/ws');
+  const socket = new SockJS('http://172.20.48.159:8080/ws');
   stompClient = new Client({
     webSocketFactory: () => socket,
     reconnectDelay: 5000,
