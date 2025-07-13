@@ -1,193 +1,236 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, TextInput, FlatList, Text, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import { RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
 
-// Define the Message type
 interface Message {
-  id: number;
-  text: string;
   sender: string;
-  timestamp: string;
+  content: string;
+  timestamp: Date;
 }
 
-export default function ChatInterface() {
-  // Use Message[] for the messages state
+interface Chat {
+  id: string;
+  name?: string;
+}
+
+type ChatScreenRouteProp = RouteProp<RootStackParamList, 'ChatScreen'>;
+type ChatScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ChatScreen'>;
+
+interface ChatScreenProps {
+  route: ChatScreenRouteProp;
+  navigation: ChatScreenNavigationProp;
+}
+
+const LOGGED_IN_USER = 'nishtha'; // Replace with context/global state in real app
+
+const ChatScreen = ({ route, navigation }: ChatScreenProps) => {
+  const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const { chat } = route.params; // for room/user info
+  const flatListRef = useRef<FlatList>(null);
 
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      const newMessage = {
-        id: Date.now(),
-        text: inputMessage,
-        sender: 'user',
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+  useEffect(() => {
+    const sock = new SockJS('http://172.20.48.96:8080/ws');
+    const stompClient = new Client({
+      webSocketFactory: () => sock,
+      onConnect: () => {
+        stompClient.subscribe('/topic/chatroom/' + chat.id, (message) => {
+          const received = JSON.parse(message.body);
+          setMessages((prev) => [...prev, received]);
+        });
+      },
+    });
+
+    stompClient.activate();
+    setClient(stompClient);
+
+    return () => {
+      stompClient.deactivate();
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (client && inputMessage.trim()) {
+      const messageObj = {
+        sender: LOGGED_IN_USER, // use actual logged-in user
+        content: inputMessage,
+        timestamp: new Date(),
       };
-      setMessages([...messages, newMessage]);
+      client.publish({
+        destination: '/app/chatroom/' + chat.id,
+        body: JSON.stringify(messageObj),
+      });
       setInputMessage('');
     }
   };
 
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isSent = item.sender === LOGGED_IN_USER;
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isSent ? styles.sentMessage : styles.receivedMessage,
+        ]}
+      >
+        <Text style={[styles.messageSender, isSent ? styles.sentSender : styles.receivedSender]}>
+          {isSent ? 'You' : item.sender}
+        </Text>
+        <Text style={styles.messageText}>{item.content}</Text>
+      </View>
+    );
+  };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Icon name="arrow-back" size={24} color="#4B5563" />
-        <View style={styles.userSection}>
-          <View style={styles.avatarWrapper}>
-            <View style={styles.avatar} />
-          </View>
-          <View>
-            <Text style={styles.username}>Nishtha</Text>  {/* name of the one signed in */}
-            <View style={styles.statusRow}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>Online</Text>
-            </View>
-          </View>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>{'‹'}</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{chat.name || 'Chat'}</Text>
+      </View>
+      {/* Chat messages */}
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderMessage}
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={styles.messagesList}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      />
+      {/* Input area */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={80}
+      >
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={inputMessage}
+            onChangeText={setInputMessage}
+            onSubmitEditing={sendMessage}
+            placeholder="Type message..."
+            placeholderTextColor="#B88A6A"
+            style={styles.input}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
         </View>
-        <Icon name="more-vert" size={24} color="#4B5563" />
-      </View>
-
-      {/* Messages -> use flatlist*/} 
-      <ScrollView contentContainerStyle={styles.messages}>
-        {messages.map((message) => (
-          <View key={message.id} style={styles.messageRight}>
-            <View style={styles.messageBubble}>
-              <Text style={styles.messageText}>{message.text}</Text>
-            </View>
-            <Text style={styles.timestamp}>{message.timestamp}</Text>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Input Area */}
-      <View style={styles.inputArea}>
-        <Icon name="add" size={24} color="#6B7280" />
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-          value={inputMessage}
-          onChangeText={setInputMessage}
-          onSubmitEditing={handleSendMessage}
-        />
-        <Icon name="search" size={24} color="#6B7280" />
-        <Icon name="face" size={24} color="#6B7280" />
-        <Icon name="mic" size={24} color="#6B7280" />
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F5E6D3',
   },
   header: {
-    backgroundColor: '#FFFFFF',
-    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: '#F5E6D3',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: '#E5E7EB',
+    borderBottomColor: 'rgba(184, 138, 106, 0.1)',
+    elevation: 2,
+    shadowColor: '#B88A6A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  userSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    columnGap: 12,
+  backButton: {
+    marginRight: 12,
+    padding: 4,
   },
-  avatarWrapper: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#D1D5DB',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  backButtonText: {
+    fontSize: 28,
+    color: '#B88A6A',
   },
-  avatar: {
-    width: 32,
-    height: 32,
-    backgroundColor: '#9CA3AF',
-    borderRadius: 16,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#B88A6A',
   },
-  username: {
-    fontWeight: '600',
-    color: '#111827',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    columnGap: 4,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    backgroundColor: '#10B981',
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  messages: {
+  messagesList: {
+    flexGrow: 1,
     padding: 16,
+    backgroundColor: '#FFFFFF',
   },
-  messageRight: {
-    alignSelf: 'flex-end',
+  messageContainer: {
+    maxWidth: '75%',
     marginBottom: 12,
-    maxWidth: '80%',
-  },
-  messageBubble: {
-    backgroundColor: '#FEF3C7',
-    borderTopRightRadius: 4,
-    borderTopLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    borderBottomLeftRadius: 16,
+    borderRadius: 16,
     padding: 12,
+    shadowColor: '#B88A6A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  sentMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#B88A6A',
+  },
+  receivedMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F5E6D3',
+    borderWidth: 1,
+    borderColor: 'rgba(184, 138, 106, 0.1)',
+  },
+  messageSender: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  sentSender: {
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+  receivedSender: {
+    color: '#B88A6A',
+    fontWeight: 'bold',
   },
   messageText: {
-    color: '#1F2937',
-    fontSize: 14,
+    fontSize: 16,
+    color: '#2D1810',
   },
-  timestamp: {
-    fontSize: 10,
-    color: '#9CA3AF',
-    textAlign: 'right',
-    marginTop: 4,
-  },
-  inputArea: {
-    backgroundColor: '#FFFFFF',
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(184, 138, 106, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderTopWidth: 1,
-    borderColor: '#E5E7EB',
-    columnGap: 8,
   },
   input: {
     flex: 1,
-    backgroundColor: '#E5E7EB',
+    fontSize: 16,
+    color: '#2D1810',
+    backgroundColor: 'rgba(184, 138, 106, 0.07)',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    fontSize: 14,
-    color: '#111827',
+    marginRight: 8,
+  },
+  sendButton: {
+    backgroundColor: '#B88A6A',
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  sendButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
+
+export default ChatScreen;

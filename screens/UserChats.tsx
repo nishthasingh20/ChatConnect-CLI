@@ -11,11 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  UserChats: undefined;
-  ChatScreen: { chat: Chat };
-};
+import { RootStackParamList } from '../App';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserChats'>;
 
@@ -42,7 +38,7 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch('http://172.20.48.159:8080/api/users');
+        const response = await fetch('http://172.20.48.96:8080/api/users');
         const data = await response.json();
         // Use fullName if available, fallback to name or email
         const formattedChats = data.map((user: any) => ({
@@ -66,7 +62,11 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   const renderChatItem = ({ item }: { item: Chat }) => (
-    <TouchableOpacity style={styles.chatItem} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={styles.chatItem} 
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('ChatScreen', { chat: item })}
+    >
       <View style={styles.avatarContainer}>
         <Text style={styles.avatarText}>{item.avatar}</Text>
       </View>

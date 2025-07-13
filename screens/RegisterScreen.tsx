@@ -73,7 +73,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
     setIsLoading(true);
     try {
       // Send registration data to Spring Boot backend
-      const response = await fetch('http://172.20.48.159:8080/api/auth/register', {
+      const response = await fetch('http://172.20.48.96:8080/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

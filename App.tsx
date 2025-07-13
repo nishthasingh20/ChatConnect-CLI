@@ -9,7 +9,25 @@ import ChatScreen from './screens/ChatScreen';
 import UserChats from './screens/UserChats';
 import "fast-text-encoding";
 
-const Stack = createNativeStackNavigator();
+interface Chat {
+  id: string;
+  name: string;
+  lastMessage: string;
+  time: string;
+  unreadCount: number;
+  isOnline: boolean;
+  avatar: string;
+}
+
+export type RootStackParamList = {
+  Welcome: undefined;
+  SignIn: undefined;
+  RegisterScreen: undefined;
+  ChatScreen: { chat: Chat };
+  UserChats: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
 

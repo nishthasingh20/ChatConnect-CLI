@@ -46,7 +46,7 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
     setIsLoading(true);
     try {
       // Send login data to Spring Boot backend
-      const response = await fetch('http://172.20.48.159:8080/api/auth/login', {
+      const response = await fetch('http://172.20.48.96:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
