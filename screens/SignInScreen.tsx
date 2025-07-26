@@ -22,8 +22,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   RegisterScreen: undefined;
-  ChatScreen: undefined;
-  UserChats: undefined;
+  ChatScreen: { chat: any; sender: string };
+  UserChats: { sender: string };
   // Add other routes here if needed
 };
 
@@ -46,7 +46,7 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
     setIsLoading(true);
     try {
       // Send login data to Spring Boot backend
-      const response = await fetch('http://172.20.48.96:8080/api/auth/login', {
+      const response = await fetch('http://172.20.48.146:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,10 +58,14 @@ const SignInScreen = ({ navigation }: SignInScreenProps) => {
       });
 
       const data = await response.json();
+      console.log(data);   //take name from here -> send it to other screen -> send it to backend -> include it in chat room creation
+
+      const sender = data.loggedinUsername;
+      console.log("logged in username: " + sender);
 
       if (response.ok) {
         Alert.alert('Success', 'Signed in successfully!');
-        navigation.navigate('UserChats');
+        navigation.navigate('UserChats', { sender });
       } else {
         Alert.alert('Error', data.message || 'Invalid email or password.');
       }

@@ -6,6 +6,11 @@ import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 
+
+//api for sending 
+//login -> roomId created for respective user -> sender and receiver subscribed to the same roomId -> then messaging might work.
+
+
 interface Message {
   sender: string;
   content: string;
@@ -25,21 +30,49 @@ interface ChatScreenProps {
   navigation: ChatScreenNavigationProp;
 }
 
-const LOGGED_IN_USER = 'nishtha'; // Replace with context/global state in real app
-
 const ChatScreen = ({ route, navigation }: ChatScreenProps) => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const { chat } = route.params; // for room/user info
+  const [roomId, setRoomId] = useState<string>('');
+  const { chat, sender } = route.params; // for room/user info and sender
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    const sock = new SockJS('http://172.20.48.96:8080/ws');
+    console.log("roomId" + JSON.stringify(roomId));
+  },[])
+
+  useEffect(() => {
+    const fetchRoomId = async () => {
+      try {
+        const response = await fetch('http://172.20.48.146:8080/api/chat/room', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds: [sender, chat.name] }),
+        });
+        if (!response.ok) throw new Error('Failed to create/fetch room');
+        const data = await response.json();
+        setRoomId(data.roomId);
+      } catch (err) {
+        console.error('Error fetching room ID:', err);
+      }
+    };
+    fetchRoomId();
+  }, []);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    // Step 2: Fetch chat history
+    fetchChatHistory(roomId);
+
+    const sock = new SockJS('http://172.20.48.146:8080/ws');
     const stompClient = new Client({
       webSocketFactory: () => sock,
       onConnect: () => {
-        stompClient.subscribe('/topic/chatroom/' + chat.id, (message) => {
+        console.log('connected');   //working fine
+        stompClient.subscribe(`/topic/chatroom/${roomId}`, (message) => { //roomId
+          //console.log("chat is" + chat);
           const received = JSON.parse(message.body);
           setMessages((prev) => [...prev, received]);
         });
@@ -52,17 +85,17 @@ const ChatScreen = ({ route, navigation }: ChatScreenProps) => {
     return () => {
       stompClient.deactivate();
     };
-  }, []);
+  }, [roomId]);
 
   const sendMessage = () => {
     if (client && inputMessage.trim()) {
       const messageObj = {
-        sender: LOGGED_IN_USER, // use actual logged-in user
+        sender: sender, // use actual logged-in user
         content: inputMessage,
         timestamp: new Date(),
       };
       client.publish({
-        destination: '/app/chatroom/' + chat.id,
+        destination: `/app/chatroom/${roomId}`,
         body: JSON.stringify(messageObj),
       });
       setInputMessage('');
@@ -70,7 +103,7 @@ const ChatScreen = ({ route, navigation }: ChatScreenProps) => {
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
-    const isSent = item.sender === LOGGED_IN_USER;
+    const isSent = item.sender === sender;
     return (
       <View
         style={[
@@ -86,6 +119,23 @@ const ChatScreen = ({ route, navigation }: ChatScreenProps) => {
     );
   };
 
+  const fetchChatHistory = async (roomId: string) => {
+    try {
+      const response = await fetch(`http://172.20.48.146:8080/api/messages/${roomId}`);
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      const data = await response.json();
+      console.log('Fetched messages:', data); //to check
+      // Convert timestamp string to Date object if needed
+      const formatted = data.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp),
+      }));
+      setMessages(formatted);
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -95,6 +145,7 @@ const ChatScreen = ({ route, navigation }: ChatScreenProps) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{chat.name || 'Chat'}</Text>
       </View>
+      
       {/* Chat messages */}
       <FlatList
         ref={flatListRef}

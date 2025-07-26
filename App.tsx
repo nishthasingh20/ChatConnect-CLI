@@ -23,8 +23,8 @@ export type RootStackParamList = {
   Welcome: undefined;
   SignIn: undefined;
   RegisterScreen: undefined;
-  ChatScreen: { chat: Chat };
-  UserChats: undefined;
+  ChatScreen: { chat: Chat; sender: string };
+  UserChats: { sender: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

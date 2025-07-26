@@ -11,12 +11,15 @@ import {
   Image,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserChats'>;
+type UserChatsRouteProp = RouteProp<RootStackParamList, 'UserChats'>;
 
 interface Props {
   navigation: NavigationProp;
+  route: UserChatsRouteProp;
 }
 
 interface Chat {
@@ -29,17 +32,19 @@ interface Chat {
   avatar: string;
 }
 
-const ChatListScreen: React.FC<Props> = ({ navigation }) => {
+const ChatListScreen: React.FC<Props> = ({ navigation, route }) => {
   const [searchText, setSearchText] = useState<string>('');
   
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const { sender } = route.params;
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch('http://172.20.48.96:8080/api/users');
+        const response = await fetch('http://172.20.48.146:8080/api/users');
         const data = await response.json();
+        //here data is the users fetched from the database : console.log(data);
         // Use fullName if available, fallback to name or email
         const formattedChats = data.map((user: any) => ({
           id: user.email,
@@ -65,7 +70,7 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
     <TouchableOpacity 
       style={styles.chatItem} 
       activeOpacity={0.7}
-      onPress={() => navigation.navigate('ChatScreen', { chat: item })}
+      onPress={() => navigation.navigate('ChatScreen', { chat: item, sender })}
     >
       <View style={styles.avatarContainer}>
         <Text style={styles.avatarText}>{item.avatar}</Text>
